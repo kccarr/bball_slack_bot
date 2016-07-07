@@ -24,6 +24,11 @@ def handle_command(command, channel):
         are valid commands. If so, then acts on the commands. If not,
         returns back what it needs for clarification.
     """
+    url = "http://www.basketball-reference.com/draft/NBA_2014.html"
+
+	# this is the html from the given url
+	html = urlopen(url)
+	soup = BeautifulSoup(html)
     response = "Not sure what you mean. Use the *" + EXAMPLE_COMMAND + \
                "* command with numbers, delimited by spaces."
     if command.startswith(EXAMPLE_COMMAND):
