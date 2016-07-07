@@ -12,7 +12,7 @@ BOT_ID = os.environ.get("BOT_ID")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">:"
-EXAMPLE_COMMAND = "do"
+EXAMPLE_COMMAND = "score"
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -24,16 +24,23 @@ def handle_command(command, channel):
         are valid commands. If so, then acts on the commands. If not,
         returns back what it needs for clarification.
     """
-    date = input()
-    url = "http://stats.nba.com/scores/#!/%s" % (date)
-
-	# this is the html from the given url
-	html = urlopen(url)
-	soup = BeautifulSoup(html)
     response = "Not sure what you mean. Use the *" + EXAMPLE_COMMAND + \
-               "* command with numbers, delimited by spaces."
+               "* command with a space a date in the MM/DD/YYYY format for Basketball Scores you want."
     if command.startswith(EXAMPLE_COMMAND):
-        response = "Sure...write some more code then I can do that!"
+    	str_date = str(command)
+    	# simple testing then add regex function
+	    date = str_date[:-10]
+	    url = "http://stats.nba.com/scores/#!/{0}".format(date)
+
+		# this is the html from the given url
+		html = urlopen(url)
+		soup = BeautifulSoup(html, 'html5lib')
+		# recieving error saying None Type is not callable
+		column_headings = [th.get_text() for th in soup.findall('tr').findall('th')]
+		data_rows = soup.findall('tr')[2:]
+		score_data = [[td.get_text() for td in data_rows[i].findall('td')] 
+			for i in range(len(data_rows))]
+        response = pd.DataFrame(score_data, columns=column_headings)
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
 
